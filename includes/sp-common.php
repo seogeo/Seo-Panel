@@ -140,6 +140,16 @@ function scriptAJAXLinkHref($file, $area, $args='', $linkText='Click', $class=''
 	return $link;
 }
 
+function scriptAJAXLinkHrefDialog($file, $area, $args='', $linkText='Click', $class='', $trigger='OnClick'){
+	if ($file == 'demo') {
+		$link = ' '.$trigger.'="alertDemoMsg()"';
+	} else {
+		$link = ' '.$trigger.'="scriptDoLoadDialog('."'$file', '$area', '$args')".'"';		
+	}
+	$link = "<a href='javascript:void(0);'class='$class' $link>$linkText</a>";
+	return $link;
+}
+
 function confirmScriptAJAXLinkHref($file, $area, $args='', $linkText='Click', $trigger='OnClick'){
 	$link = ' '.$trigger.'="confirmLoad('."'$file', '$area', '$args')".'"';
 	$link = "<a href='javascript:void(0);'class='$class' $link>$linkText</a>";
@@ -280,6 +290,7 @@ function isValidReferer($referer) {
 	
 	if(stristr($referer, SP_WEBPATH)) {
 		if (!stristr($referer, 'install')) {
+			$referer = str_ireplace("&lang_code=", "&", $referer);
 			return $referer;
 		}		
 	}
@@ -305,6 +316,9 @@ function exportToCsv($fileName, $content) {
 # func to show printer hearder
 function showPrintHeader($headMsg='', $doPrint=true) {
     ?>
+    <head>
+    	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    </head>
 	<script language="Javascript" src="<?=SP_JSPATH?>/common.js"></script>
 	<script type="text/javascript">
 		<?php if ($doPrint) { ?>
@@ -340,6 +354,7 @@ function sendMail($from, $fromName, $to ,$subject,$content){
 		$mail->Host = SP_SMTP_HOST;
 		$mail->Username = SP_SMTP_USERNAME;
 		$mail->Password = SP_SMTP_PASSWORD;
+		$mail->Port = SP_SMTP_PORT;
 	}
 
 	$mail->From = $from;

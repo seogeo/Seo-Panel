@@ -554,9 +554,9 @@ class ReportController extends Controller {
 			$this->seFound = 1;
 			
 			// if execution from cron check whether cron already executed
-			if ($cron) {
+			/*if ($cron) {
 			    if (SP_MULTIPLE_CRON_EXEC && $this->isCronExecuted($keywordInfo['id'], $seInfoId, $time)) continue;
-			}			
+			}*/			
 			
 			$searchUrl = str_replace('[--keyword--]', urlencode(stripslashes($keywordInfo['name'])), $this->seList[$seInfoId]['url']);
 			$searchUrl = str_replace('[--lang--]', $keywordInfo['lang_code'], $searchUrl);

@@ -4,7 +4,7 @@
 		<select name="lang_code" id="lang_code" class="lang_code" onchange="doLoadUrl('lang_code', '<?=$redirectUrl?>')">
 			<?php
 			foreach ($langList as $langInfo) {
-				$selected = ($langInfo['lang_code'] == $_SESSION['lang_code']) ? "selected" : "";
+				$selected = ($langInfo['lang_code'] == $_SESSION['lang_code']) ? "selected='selected'" : "";
 				?>			
 				<option value="<?=$langInfo['lang_code']?>" <?=$selected?>><?=$langInfo['lang_show']?></option>
 				<?php

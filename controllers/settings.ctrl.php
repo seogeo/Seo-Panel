@@ -51,6 +51,12 @@ class SettingsController extends Controller{
     		);
 		    $this->set('scheduleList', $scheduleList);		    
 	        $this->render('settings/showreportsettings');
+	        
+		} else if ($category == 'proxy') {		    
+		    
+            $spTextProxy = $this->getLanguageTexts('proxy', $_SESSION['lang_code']);
+            $this->set('spTextProxy', $spTextProxy);		    
+	        $this->render('settings/showproxysettings');
 		} else {	
 		    $this->render('settings/showsettings');
 		}
