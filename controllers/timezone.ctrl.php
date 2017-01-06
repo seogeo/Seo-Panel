@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- *   Copyright (C) 2009-2011 by Geo Varghese(www.seopanel.in)  	   *
+ *   Copyright (C) 2009-2011 by Geo Varghese(www.seopanel.in)  	           *
  *   sendtogeo@gmail.com   												   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,33 +20,34 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-# class defines all session functions
-class Session extends Seopanel{
-
-	# starts session
-	function startSession(){
-		ini_set("session.gc_probability", 100);
-		ini_set("session.gc_divisor", 100);
-		ini_set("session.gc_maxlifetime", SP_TIMEOUT);
-		session_start();
+/**
+ * Class defines all details about managing time zones
+ */
+class TimeZoneController extends Controller {
+	
+	/**
+	 * function to get all timezones used in the system
+	 * @param string $where		The condition to filter the timezones
+	 * @return Array 			Array contains details about timezone
+	 */
+	function __getAllTimezones($where=''){
+		$sql = "select * from timezone";
+		if (!empty($where)) $sql .= $where;
+		$sql .= " order by id";
+		$timezoneList = $this->db->select($sql);
+		return $timezoneList;
 	}
 	
-	# to set session
-	function setSession($varName, $varValue){
-		$_SESSION[$varName] = $varValue;
-	}
-
-	# function read session
-	function readSession($varName) {
-		return $_SESSION[$varName];
-	}
-
-	# fucntion to destroy session
-	function destroySession() {	    
-		@Session::setSession('userInfo', "");
-		@Session::setSession('lang_code', "");
-		@Session::setSession('text', "");
-        session_destroy();	    
+	
+	/**
+	 * function to get timezone information
+	 * @param int $timezoneId	The id of the timezone
+	 * @return Array		Contains all details about the  timezone
+	 */
+	function __getTimezoneInfo($timezoneId) {
+		$sql = "select * from timezone where lang_code='$timezoneId'";
+		$timezoneInfo = $this->db->select($sql, true);
+		return $timezoneInfo;
 	}
 }
 ?>

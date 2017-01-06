@@ -195,13 +195,13 @@ class ProxyController extends Controller{
 
 	# func to change status
 	function __changeStatus($proxyId, $status){
-		$sql = "update proxylist set status=$status where id=$proxyId";
+		$sql = "update proxylist set status=$status where id=".intval($proxyId);
 		$this->db->query($sql);
 	}
 
 	# func to change status
 	function __deleteProxy($proxyId){
-		$sql = "delete from proxylist where id=$proxyId";
+		$sql = "delete from proxylist where id=".intval($proxyId);
 		$this->db->query($sql);
 	}
 
@@ -250,7 +250,7 @@ class ProxyController extends Controller{
 	}
 
 	function __getProxyInfo($proxyId){
-		$sql = "select * from proxylist where id=$proxyId";
+		$sql = "select * from proxylist where id=".intval($proxyId);
 		$listInfo = $this->db->select($sql, true);
 		$listInfo['proxy_username'] = stripslashes($listInfo['proxy_username']);
 		$listInfo['proxy_password'] = stripslashes($listInfo['proxy_password']);
@@ -295,6 +295,7 @@ class ProxyController extends Controller{
 				$sql = "update proxylist set
 						proxy = '".addslashes($listInfo['proxy'])."',
 						port = '".intval($listInfo['port'])."',
+						status = '".intval($listInfo['status'])."',
 						proxy_auth = $proxyAuth,
 						proxy_username = '".addslashes($listInfo['proxy_username'])."',
 						proxy_password = '".addslashes($listInfo['proxy_password'])."'
@@ -334,6 +335,68 @@ class ProxyController extends Controller{
 	function showCronCommand(){
 	
 		$this->render('proxy/croncommand');
+	}
+	/**
+	 * function to show perfomance of a proxy
+	 * @param Array $info	Contains all search info details
+	 */
+	function showProxyPerfomance($info = '') {
+		
+		$sql = "select p.id as proxy_id, p.proxy, p.port, count(*) count, sum(crawl_status) success, avg(crawl_status) avg_score,
+		count(*) - sum(crawl_status) fail from crawl_log t join proxylist p on p.id=t.proxy_id where 1=1";
+		
+		$conditions = "";
+		if (empty($info['keyword'])) {
+			$info['keyword'] =  '';
+		} else {
+			$info['keyword'] = urldecode($info['keyword']);
+			$searchKeyword = addslashes($info['keyword']);
+			$conditions .= " and p.proxy like '%$searchKeyword%'";
+			$urlParams .= "&keyword=".urlencode($info['keyword']);
+		}
+		
+		$this->set('keyword', $info['keyword']);
+		
+		if (!empty ($info['from_time'])) {
+			$fromTime = strtotime($info['from_time'] . ' 00:00:00');
+		} else {
+			$fromTime = mktime(0, 0, 0, date('m'), date('d') - 90, date('Y'));
+		}
+		
+		if (!empty ($info['to_time'])) {
+			$toTime = strtotime($info['to_time'] . ' 00:00:00');
+		} else {
+			$toTime = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
+		}
+		
+		$fromTimeLabel = date('Y-m-d', $fromTime);
+		$toTimeLabel = date('Y-m-d', $toTime);
+		$this->set('fromTime', $fromTimeLabel);
+		$this->set('toTime', $toTimeLabel);
+		$urlParams .= "&from_time=$fromTimeLabel&to_time=$toTimeLabel";
+		
+		// set status
+		$urlParams .= "&order_by=".$info['order_by'];
+		$this->set('statVal', $info['order_by']);		
+		
+		// sql created using param
+		$sql .= " $conditions and crawl_time >='$fromTimeLabel 00:00:00' and crawl_time<='$toTimeLabel 23:59:59' group by proxy_id order by avg_score";
+		$sql .= ($info['order_by'] == 'fail') ? " ASC" : " DESC";
+		
+		// pagination setup
+		$this->db->query($sql, true);
+		$this->paging->setDivClass('pagingdiv');
+		$this->paging->loadPaging($this->db->noRows, SP_PAGINGNO);
+		$pagingDiv = $this->paging->printPages('proxy.php?sec=perfomance', '', 'scriptDoLoad', 'content', $urlParams);
+		$this->set('pagingDiv', $pagingDiv);
+		$sql .= " limit ".$this->paging->start .",". $this->paging->per_page;
+		
+		$logList = $this->db->select($sql);
+		$this->set('pageNo', $info['pageno']);
+		$this->set('list', $logList);
+		$this->set('urlParams', $urlParams);
+		
+		$this->render('proxy/proxyperfomance');
 	}
 }
 ?>
